@@ -1,0 +1,12 @@
+[package]
+name = "client"
+version = "0.1.0"
+authors = ["Mikhail Galkin"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+kernel32-sys = "0.2.2"
+winapi = "0.2.5"
+game = { path = "../game" }

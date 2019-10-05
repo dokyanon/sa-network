@@ -1,0 +1,9 @@
+[package]
+name = "game"
+version = "0.1.0"
+authors = ["Mikhail Galkin"]
+
+[dependencies]
+kernel32-sys = "0.2.2"
+winapi = "0.2.5"
+libc = "0.2.22"
