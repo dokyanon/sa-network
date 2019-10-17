@@ -6,8 +6,7 @@ pub fn start_game()
 {
 	patches::apply_global_game_patches();
 	patches::apply_global_game_hooks();
-
-/*	
+	
 	utils::set_game_state(8);
 	
 	unsafe
@@ -23,5 +22,4 @@ pub fn start_game()
 		
 		}
 	}
-*/
 }

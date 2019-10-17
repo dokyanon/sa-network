@@ -99,33 +99,17 @@ pub unsafe extern fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32 {
     return 0;
 }
 
+
 pub unsafe extern fn install_hook(s1: *mut u8, s2: u32)
 {
     let mut oldprot = 0;
-	unsafe { kernel32::VirtualProtect(s1 as *mut libc::c_void, 5 as winapi::SIZE_T, 0x40, &mut oldprot); }
+	kernel32::VirtualProtect(s1 as *mut libc::c_void, 5 as winapi::SIZE_T, 0x40, &mut oldprot);
+
+	let addr = s2 - ((s1 as u32) + 5);
 	
-    let addr = s2 - (s1 as u32) + 5;
-    std::ptr::write_unaligned(s1, 0xE8);
+    std::ptr::write_unaligned(s1, 0xE9);
     std::ptr::write_unaligned(s1.add(1), (addr & 0xff) as u8);
     std::ptr::write_unaligned(s1.add(2), ((addr >> 8) & 0xff) as u8);
     std::ptr::write_unaligned(s1.add(3), ((addr >> 16) & 0xff) as u8);
     std::ptr::write_unaligned(s1.add(4), ((addr >> 24) & 0xff) as u8);
 }
-
-/*
-pub unsafe extern fn install_hook(s1: *mut u32, s2: u32)
-{
-	unprotect(s1, 5);
-	std::ptr::write_volatile(s1, 0xE8);
-	std::ptr::write_volatile(s1.add(1), s2 - *s1 + 5);
-}
-*/
-
-/*
-void InstallCallHook(DWORD dwInstallAddress, DWORD dwHookFunction)
-{
-	Unprotect(dwInstallAddress, 5);
-	*(BYTE *)dwInstallAddress = 0xE8;
-	*(DWORD *)(dwInstallAddress + 1) = (dwHookFunction - (dwInstallAddress + 5));
-}
-*/

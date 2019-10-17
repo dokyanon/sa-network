@@ -1,7 +1,7 @@
 use crate::utils;
+use crate::hooks;
 #[allow(overflowing_literals)]
 static mut SKIPPING: bool = false;
-static mut FRT: bool = false;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
@@ -9,64 +9,42 @@ pub fn apply_preloading_game_patches()
 {
 	unsafe
 	{
-		let mut file = OpenOptions::new()
-			.write(true)
-			.append(true)
-			.create(true)
-			.open("out.txt")
-			.unwrap();
+		// DISABLE CGameLogic::Update
+		utils::memset(0x442AD0 as *mut u32, 0xC3, 1);
 		
+		//DISABLE SCM
 		//utils::memset(0x468EB5 as *mut u32, 0xEB, 1); 
-		//utils::memset(0x468EB6 as *mut u32, 0x32, 1); 
+		//utils::memset(0x468EB6 as *mut u32, 0x32, 1);
 		
-		utils::unprotect(0x469F00 as *mut u32, 5);
-		//writeln!(file, "{}", format_args!("VALUE BEFORE: {:X}\r\n", std::ptr::read((0x469F00 as *mut u32).offset(-1)))).unwrap();
-		//writeln!(file, "{}", format_args!("PTR BEFORE: {:X}\r\n", std::ptr::read((0x469F00 as *mut u32)))).unwrap();
-		
-		//libc::memset(0x469F00 as *mut libc::c_void, 0xE8, 0);
-//		let mut ptr: [u32; 2] = [0x90; 2];
-//		ptr[0] = 0xE9;
-//		ptr[1] = CRunningScript__Process_HOOK as u32 - (0x469F00 + 5);
-//		writeln!(file, "{}", format_args!("ARR: {:X} {:X}\r\n", ptr[0], ptr[1])).unwrap();
-		
-		//*(0x469F00 as *mut u32).offset(-1) = 0xE9;//0xE8;
-		//*(0x469F00 as *mut u32).offset(0) = CRunningScript__Process_HOOK as u32 - (0x469F00 + 5);
-
-//		writeln!(file, "{}", format_args!("VAL: {:X}\r\n", u32::from_ne_bytes(ptr))).unwrap();
-		
-		//utils::memset(0x469F00 as *mut u32, to_u32(&ptr[0..1]), 6);
-		//std::ptr::write_volatile((0x469F00 as *mut u32).offset(0), CRunningScript__Process_HOOK as u32 - (0x469F00 + 5));
-		
-		//writeln!(file, "{}", format_args!("VALUE AFTER: {:X}\r\n", std::ptr::read((0x469F00 as *mut u32).offset(-1)))).unwrap();
-		//writeln!(file, "{}", format_args!("PTR AFTER: {:X}\r\n", std::ptr::read((0x469F00 as *mut u32)))).unwrap();
-		
-		//std::ptr::write_volatile((0x469F00 as *mut u32), CRunningScript__Process_HOOK as u32 - (0x469F00 + 5));
-		utils::install_hook(0x469F00 as *mut u8, CRunningScript__Process_HOOK as u32 - (0x469F00 + 5));
-		//utils::memset(std::mem::transmute::<u32, *mut u32>(0x469F00).offset(1), CRunningScript__Process_HOOK as u32 - (0x469F00 + 5), 1);
+		//need fix crash after hook
+		//utils::install_hook(0x469F00 as *mut u8, crunning_script_process_hook as u32);
 		
 		//max FPS to 60	
 		utils::memset(0xC1704C as *mut u32, 60, 1); 
 	}
 }
 
-pub fn CRunningScript__Process_HOOK()
+pub fn crunning_script_process_hook()
 {
-	unsafe 
-	{
-		asm!("pushad" : : : : "intel");
-
-		asm!("popad
-			retn" : : : : "intel");
-	}
+	let mut file = OpenOptions::new()
+		.write(true)
+		.append(true)
+		.create(true)
+		.open("test.txt")
+		.unwrap();
+	writeln!(file, "YEAP\r\n").unwrap();
 }
 
 pub fn apply_global_game_patches() 
 {
 	unsafe
-	{
-		// DISABLE CGameLogic::Update
-		utils::memset(0x442AD0 as *mut u32, 0xC3, 1);
-		
+	{		
+		// Run game instantly
+		utils::memset(0x748AA8 as *mut u32, 0x90, 6);
+		utils::memcpy(0x748AA8 as *mut u32, b"\xC7\x05\xC0\xD4\xC8\x00\x05\x00\x00\x00".as_ptr(), 10);
+		utils::memset(0x748C23 as *mut u32, 0x90, 5);
+		utils::memset(0x748C2B as *mut u32, 0x90, 5);
+
 		// DISABLE CPopulation__AddToPopulation
 		utils::memset(0x614720 as *mut u32, 0x32, 1);
 		utils::memset(0x614721 as *mut u32, 0xC0, 1);
